@@ -210,7 +210,6 @@ class JobThread
 {
 public:
 	void CreateAndStartThread( unsigned int threadId );
-	void WaitForThreadToStop();
 	void Go();
 	void BackgroundTask();
 	HANDLE m_GoSignal, m_ThreadHandle;
@@ -233,7 +232,6 @@ public:
 protected:
 	friend class JobThread;
 	Job* GetNextJob();
-	Job* FindNextJob();
 	static JobManager* m_JobManager;
 	Job* m_JobList[256];
 	CRITICAL_SECTION m_CS;
