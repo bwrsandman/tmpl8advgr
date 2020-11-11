@@ -53,10 +53,6 @@ Index of this file:
 
 */
 
-#include "precomp.h"
-
-#if 0
-
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -71,8 +67,6 @@ Index of this file:
 #include <stddef.h>         // intptr_t
 #else
 #include <stdint.h>         // intptr_t
-#endif
-
 #endif
 
 #ifdef _MSC_VER

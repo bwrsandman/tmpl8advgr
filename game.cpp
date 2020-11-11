@@ -1,4 +1,9 @@
-#include "precomp.h" // include (only) this in every .cpp file
+#include "game.h"
+
+#include "surface.h"
+#include "template.h"
+
+using namespace Tmpl8;
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -29,9 +34,9 @@ void Game::PresentFloatBuffer()
 	for( int y = 0; y < SCRHEIGHT; y++ ) for( int x = 0; x < SCRWIDTH; x++ )
 	{
 		float3 pixel = floatBuffer[pixelIndex];
-		int red = clamp( (int)(pixel.x * 256.0f), 0, 255 );
-		int green = clamp( (int)(pixel.y * 256.0f), 0, 255 );
-		int blue = clamp( (int)(pixel.z * 256.0f), 0, 255 );
+		int red = std::clamp( (int)(pixel.x * 256.0f), 0, 255 );
+		int green = std::clamp( (int)(pixel.y * 256.0f), 0, 255 );
+		int blue = std::clamp( (int)(pixel.z * 256.0f), 0, 255 );
 		screenBuffer[pixelIndex++] = (red << 16) + (green << 8) + blue;
 	}
 }

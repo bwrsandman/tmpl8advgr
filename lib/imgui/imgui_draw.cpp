@@ -22,10 +22,6 @@ Index of this file:
 
 */
 
-#include "precomp.h"
-
-#if 0
-
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -48,8 +44,6 @@ Index of this file:
 #else
 #include <stdlib.h>     // alloca
 #endif
-#endif
-
 #endif
 
 // Visual Studio warnings

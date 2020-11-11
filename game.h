@@ -1,6 +1,12 @@
 #pragma once
 
+// Forward declarations
+struct float3;
+
 namespace Tmpl8 {
+
+// Forward declarations
+class Surface;
 
 class Game
 {

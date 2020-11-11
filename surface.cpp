@@ -1,7 +1,10 @@
 // Template, IGAD version 2
 // IGAD/NHTV/UU - Jacco Bikker - 2006-2020
 
-#include "precomp.h"
+#include <FreeImage.h>
+#include "surface.h"
+
+#include "template.h"
 
 namespace Tmpl8
 {

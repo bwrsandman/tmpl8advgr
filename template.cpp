@@ -1,9 +1,27 @@
 // Template, IGAD version 2
 // IGAD/NHTV/UU - Jacco Bikker - 2006-2020
 
-#include "precomp.h"
+#include "template.h"
 
-#pragma comment( linker, "/subsystem:windows /ENTRY:mainCRTStartup" )
+#include <fstream>
+
+#ifdef __linux__
+#include <sys/stat.h>
+#include <GL/glx.h>
+#endif
+
+#include <FreeImage.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+#include "game.h"
+#include "surface.h"
+
+using namespace std;
+using namespace Tmpl8;
 
 // Enable usage of dedicated GPUs in notebooks
 // Note: this does cause the linker to produce a .lib and .exp file;
@@ -62,7 +80,7 @@ void ErrorCallback( int error, const char* description )
 }
 
 // Application entry point
-void main()
+int main(int argc, char* argv[])
 {
 	// open a window
 	if (!glfwInit()) FatalError( "glfwInit failed." );
@@ -152,8 +170,11 @@ void main()
 	ImGui::DestroyContext();
 	glfwDestroyWindow( window );
 	glfwTerminate();
+
+	return EXIT_SUCCESS;
 }
 
+#if 0
 // Basic TaskFlow interface - see https://github.com/cpp-taskflow/cpp-taskflow for additional options
 tf::Executor executor;
 tf::Taskflow taskflow;
@@ -301,6 +322,7 @@ JobManager* JobManager::GetJobManager()
 	}
 	return m_JobManager;
 }
+#endif
 
 // OpenGL helper functions
 void _CheckGL( const char* f, int l )
@@ -657,7 +679,7 @@ bool FileIsNewer( const char* file1, const char* file2 )
 
 bool FileExists( const char* f )
 {
-	ifstream s( f );
+	std::ifstream s( f );
 	return s.good();
 }
 
@@ -669,7 +691,7 @@ bool RemoveFile( const char* f )
 
 uint FileSize( string filename )
 {
-	ifstream s( filename );
+	std::ifstream s( filename );
 	return s.good();
 }
 
@@ -1129,12 +1151,28 @@ bool Kernel::InitCL()
 		printf( "No device found that supports CL/GL context sharing\n" );
 		return false;
 	}
+#ifdef linux
+	cl_context_properties props[] =
+	{
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+		CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0
+	};
+#elif defined _WIN32
 	cl_context_properties props[] =
 	{
 		CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
 		CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
 		CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0
 	};
+#elif defined TARGET_OS_MAC
+	CGLContextObj glContext = CGLGetCurrentContext();
+	CGLShareGroupObj shareGroup = CGLGetShareGroup(glContext);
+	cl_context_properties properties[] = {
+		CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
+		(cl_context_properties)shareGroup, 0
+	};
+#endif
 	// attempt to create a context with the requested features
 	candoInterop = true;
 	context = clCreateContext( props, 1, &devices[deviceUsed], NULL, NULL, &error );

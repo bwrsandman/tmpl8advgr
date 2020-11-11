@@ -3,6 +3,20 @@
 
 #pragma once
 
+// c std libs
+#include <cmath>
+#include <cstring>
+
+// c++ std libs
+#include <chrono>
+#include <string>
+
+// third parties
+#include <glad/glad.h>
+// OpenCL headers
+#include <CL/cl.h>
+#include <CL/cl_gl_ext.h>
+
 // Basic types
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -49,6 +63,11 @@ struct ALIGN( 4 ) uchar4 { uchar x, y, z, w; };
 #define FATALERROR_IF( condition, fmt, ... ) do { if ( ( condition ) ) FATALERROR( fmt, ##__VA_ARGS__ ); } while ( 0 )
 #define FATALERROR_IN( prefix, errstr, fmt, ... ) FatalError( prefix " returned error '%s' at %s:%d" fmt "\n", errstr, __FILE__, __LINE__, ##__VA_ARGS__ );
 #define FATALERROR_IN_CALL( stmt, error_parser, fmt, ... ) do { auto ret = ( stmt ); if ( ret ) FATALERROR_IN( #stmt, error_parser( ret ), fmt, ##__VA_ARGS__ ) } while ( 0 )
+
+// Forward Declarations
+namespace Tmpl8 {
+class Surface;
+}
 
 // OpenGL texture wrapper
 class GLTexture
@@ -179,17 +198,18 @@ struct Timer
 	Timer() { reset(); }
 	float elapsed() const
 	{
-		chrono::high_resolution_clock::time_point t2 = chrono::high_resolution_clock::now();
-		chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double>>(t2 - start);
+		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - start);
 		return (float)time_span.count();
 	}
-	void reset() { start = chrono::high_resolution_clock::now(); }
-	chrono::high_resolution_clock::time_point start;
+	void reset() { start = std::chrono::high_resolution_clock::now(); }
+	std::chrono::high_resolution_clock::time_point start;
 };
 
 // Swap
 template <class T> void Swap( T &x, T &y ) { T t; t = x, x = y, y = t; }
 
+#if 0
 // Basic TaskFlow interface - see https://github.com/cpp-taskflow/cpp-taskflow for additional options
 using namespace tf;
 extern Taskflow taskflow;
@@ -239,6 +259,7 @@ protected:
 	unsigned int m_NumThreads, m_JobCount;
 	JobThread* m_JobThreadList;
 };
+#endif
 
 // Random numbers
 uint RandomUInt();
@@ -252,9 +273,9 @@ void FatalError( const char* fmt, ... );
 bool FileIsNewer( const char* file1, const char* file2 );
 bool FileExists( const char* f );
 bool RemoveFile( const char* f );
-string TextFileRead( const char* _File );
-void TextFileWrite( const string& text, const char* _File );
-string LowerCase( string s );
+std::string TextFileRead( const char* _File );
+void TextFileWrite( const std::string& text, const char* _File );
+std::string LowerCase( std::string s );
 
 // Math
 inline float fminf( float a, float b ) { return a < b ? a : b; }
@@ -476,49 +497,46 @@ inline float4 operator/( float b, float4 a ) { return make_float4( b / a.x, b / 
 inline float2 fminf( float2 a, float2 b ) { return make_float2( fminf( a.x, b.x ), fminf( a.y, b.y ) ); }
 inline float3 fminf( float3 a, float3 b ) { return make_float3( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ) ); }
 inline float4 fminf( float4 a, float4 b ) { return make_float4( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ), fminf( a.w, b.w ) ); }
-inline int2 min( int2 a, int2 b ) { return make_int2( min( a.x, b.x ), min( a.y, b.y ) ); }
-inline int3 min( int3 a, int3 b ) { return make_int3( min( a.x, b.x ), min( a.y, b.y ), min( a.z, b.z ) ); }
-inline int4 min( int4 a, int4 b ) { return make_int4( min( a.x, b.x ), min( a.y, b.y ), min( a.z, b.z ), min( a.w, b.w ) ); }
-inline uint2 min( uint2 a, uint2 b ) { return make_uint2( min( a.x, b.x ), min( a.y, b.y ) ); }
-inline uint3 min( uint3 a, uint3 b ) { return make_uint3( min( a.x, b.x ), min( a.y, b.y ), min( a.z, b.z ) ); }
-inline uint4 min( uint4 a, uint4 b ) { return make_uint4( min( a.x, b.x ), min( a.y, b.y ), min( a.z, b.z ), min( a.w, b.w ) ); }
+inline int2 min( int2 a, int2 b ) { return make_int2( std::min( a.x, b.x ), std::min( a.y, b.y ) ); }
+inline int3 min( int3 a, int3 b ) { return make_int3( std::min( a.x, b.x ), std::min( a.y, b.y ), std::min( a.z, b.z ) ); }
+inline int4 min( int4 a, int4 b ) { return make_int4( std::min( a.x, b.x ), std::min( a.y, b.y ), std::min( a.z, b.z ), std::min( a.w, b.w ) ); }
+inline uint2 min( uint2 a, uint2 b ) { return make_uint2( std::min( a.x, b.x ), std::min( a.y, b.y ) ); }
+inline uint3 min( uint3 a, uint3 b ) { return make_uint3( std::min( a.x, b.x ), std::min( a.y, b.y ), std::min( a.z, b.z ) ); }
+inline uint4 min( uint4 a, uint4 b ) { return make_uint4( std::min( a.x, b.x ), std::min( a.y, b.y ), std::min( a.z, b.z ), std::min( a.w, b.w ) ); }
 
 inline float2 fmaxf( float2 a, float2 b ) { return make_float2( fmaxf( a.x, b.x ), fmaxf( a.y, b.y ) ); }
 inline float3 fmaxf( float3 a, float3 b ) { return make_float3( fmaxf( a.x, b.x ), fmaxf( a.y, b.y ), fmaxf( a.z, b.z ) ); }
 inline float4 fmaxf( float4 a, float4 b ) { return make_float4( fmaxf( a.x, b.x ), fmaxf( a.y, b.y ), fmaxf( a.z, b.z ), fmaxf( a.w, b.w ) ); }
-inline int2 max( int2 a, int2 b ) { return make_int2( max( a.x, b.x ), max( a.y, b.y ) ); }
-inline int3 max( int3 a, int3 b ) { return make_int3( max( a.x, b.x ), max( a.y, b.y ), max( a.z, b.z ) ); }
-inline int4 max( int4 a, int4 b ) { return make_int4( max( a.x, b.x ), max( a.y, b.y ), max( a.z, b.z ), max( a.w, b.w ) ); }
-inline uint2 max( uint2 a, uint2 b ) { return make_uint2( max( a.x, b.x ), max( a.y, b.y ) ); }
-inline uint3 max( uint3 a, uint3 b ) { return make_uint3( max( a.x, b.x ), max( a.y, b.y ), max( a.z, b.z ) ); }
-inline uint4 max( uint4 a, uint4 b ) { return make_uint4( max( a.x, b.x ), max( a.y, b.y ), max( a.z, b.z ), max( a.w, b.w ) ); }
+inline int2 max( int2 a, int2 b ) { return make_int2( std::max( a.x, b.x ), std::max( a.y, b.y ) ); }
+inline int3 max( int3 a, int3 b ) { return make_int3( std::max( a.x, b.x ), std::max( a.y, b.y ), std::max( a.z, b.z ) ); }
+inline int4 max( int4 a, int4 b ) { return make_int4( std::max( a.x, b.x ), std::max( a.y, b.y ), std::max( a.z, b.z ), std::max( a.w, b.w ) ); }
+inline uint2 max( uint2 a, uint2 b ) { return make_uint2( std::max( a.x, b.x ), std::max( a.y, b.y ) ); }
+inline uint3 max( uint3 a, uint3 b ) { return make_uint3( std::max( a.x, b.x ), std::max( a.y, b.y ), std::max( a.z, b.z ) ); }
+inline uint4 max( uint4 a, uint4 b ) { return make_uint4( std::max( a.x, b.x ), std::max( a.y, b.y ), std::max( a.z, b.z ), std::max( a.w, b.w ) ); }
 
 inline float lerp( float a, float b, float t ) { return a + t * (b - a); }
 inline float2 lerp( float2 a, float2 b, float t ) { return a + t * (b - a); }
 inline float3 lerp( float3 a, float3 b, float t ) { return a + t * (b - a); }
 inline float4 lerp( float4 a, float4 b, float t ) { return a + t * (b - a); }
 
-inline float clamp( float f, float a, float b ) { return fmaxf( a, fminf( f, b ) ); }
-inline int clamp( int f, int a, int b ) { return max( a, min( f, b ) ); }
-inline uint clamp( uint f, uint a, uint b ) { return max( a, min( f, b ) ); }
-inline float2 clamp( float2 v, float a, float b ) { return make_float2( clamp( v.x, a, b ), clamp( v.y, a, b ) ); }
-inline float2 clamp( float2 v, float2 a, float2 b ) { return make_float2( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ) ); }
-inline float3 clamp( float3 v, float a, float b ) { return make_float3( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ) ); }
-inline float3 clamp( float3 v, float3 a, float3 b ) { return make_float3( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ) ); }
-inline float4 clamp( float4 v, float a, float b ) { return make_float4( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ), clamp( v.w, a, b ) ); }
-inline float4 clamp( float4 v, float4 a, float4 b ) { return make_float4( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ), clamp( v.w, a.w, b.w ) ); }
-inline int2 clamp( int2 v, int a, int b ) { return make_int2( clamp( v.x, a, b ), clamp( v.y, a, b ) ); }
-inline int2 clamp( int2 v, int2 a, int2 b ) { return make_int2( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ) ); }
-inline int3 clamp( int3 v, int a, int b ) { return make_int3( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ) ); }
-inline int3 clamp( int3 v, int3 a, int3 b ) { return make_int3( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ) ); }
-inline int4 clamp( int4 v, int a, int b ) { return make_int4( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ), clamp( v.w, a, b ) ); }
-inline int4 clamp( int4 v, int4 a, int4 b ) { return make_int4( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ), clamp( v.w, a.w, b.w ) ); }
-inline uint2 clamp( uint2 v, uint a, uint b ) { return make_uint2( clamp( v.x, a, b ), clamp( v.y, a, b ) ); }
-inline uint2 clamp( uint2 v, uint2 a, uint2 b ) { return make_uint2( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ) ); }
-inline uint3 clamp( uint3 v, uint a, uint b ) { return make_uint3( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ) ); }
-inline uint3 clamp( uint3 v, uint3 a, uint3 b ) { return make_uint3( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ) ); }
-inline uint4 clamp( uint4 v, uint a, uint b ) { return make_uint4( clamp( v.x, a, b ), clamp( v.y, a, b ), clamp( v.z, a, b ), clamp( v.w, a, b ) ); }
-inline uint4 clamp( uint4 v, uint4 a, uint4 b ) { return make_uint4( clamp( v.x, a.x, b.x ), clamp( v.y, a.y, b.y ), clamp( v.z, a.z, b.z ), clamp( v.w, a.w, b.w ) ); }
+inline float2 clamp( float2 v, float a, float b ) { return make_float2( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ) ); }
+inline float2 clamp( float2 v, float2 a, float2 b ) { return make_float2( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ) ); }
+inline float3 clamp( float3 v, float a, float b ) { return make_float3( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ) ); }
+inline float3 clamp( float3 v, float3 a, float3 b ) { return make_float3( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ) ); }
+inline float4 clamp( float4 v, float a, float b ) { return make_float4( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ), std::clamp( v.w, a, b ) ); }
+inline float4 clamp( float4 v, float4 a, float4 b ) { return make_float4( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ), std::clamp( v.w, a.w, b.w ) ); }
+inline int2 clamp( int2 v, int a, int b ) { return make_int2( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ) ); }
+inline int2 clamp( int2 v, int2 a, int2 b ) { return make_int2( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ) ); }
+inline int3 clamp( int3 v, int a, int b ) { return make_int3( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ) ); }
+inline int3 clamp( int3 v, int3 a, int3 b ) { return make_int3( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ) ); }
+inline int4 clamp( int4 v, int a, int b ) { return make_int4( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ), std::clamp( v.w, a, b ) ); }
+inline int4 clamp( int4 v, int4 a, int4 b ) { return make_int4( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ), std::clamp( v.w, a.w, b.w ) ); }
+inline uint2 clamp( uint2 v, uint a, uint b ) { return make_uint2( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ) ); }
+inline uint2 clamp( uint2 v, uint2 a, uint2 b ) { return make_uint2( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ) ); }
+inline uint3 clamp( uint3 v, uint a, uint b ) { return make_uint3( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ) ); }
+inline uint3 clamp( uint3 v, uint3 a, uint3 b ) { return make_uint3( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ) ); }
+inline uint4 clamp( uint4 v, uint a, uint b ) { return make_uint4( std::clamp( v.x, a, b ), std::clamp( v.y, a, b ), std::clamp( v.z, a, b ), std::clamp( v.w, a, b ) ); }
+inline uint4 clamp( uint4 v, uint4 a, uint4 b ) { return make_uint4( std::clamp( v.x, a.x, b.x ), std::clamp( v.y, a.y, b.y ), std::clamp( v.z, a.z, b.z ), std::clamp( v.w, a.w, b.w ) ); }
 
 inline float dot( float2 a, float2 b ) { return a.x * b.x + a.y * b.y; }
 inline float dot( float3 a, float3 b ) { return a.x * b.x + a.y * b.y + a.z * b.z; }
@@ -564,7 +582,7 @@ inline float3 cross( float3 a, float3 b ) { return make_float3( a.y * b.z - a.z 
 
 inline float smoothstep( float a, float b, float x )
 {
-	float y = clamp( (x - a) / (b - a), 0.0f, 1.0f );
+	float y = std::clamp( (x - a) / (b - a), 0.0f, 1.0f );
 	return (y*y*(3.0f - (2.0f*y)));
 }
 inline float2 smoothstep( float2 a, float2 b, float2 x )
@@ -613,7 +631,7 @@ public:
 	{
 		union { __m128 e4; float e[4]; };
 		e4 = _mm_sub_ps( bmax4, bmin4 );
-		return max( 0.0f, e[0] * e[1] + e[0] * e[2] + e[1] * e[2] );
+		return std::max( 0.0f, e[0] * e[1] + e[0] * e[2] + e[1] * e[2] );
 	}
 	int LongestAxis() const
 	{

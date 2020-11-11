@@ -62,10 +62,6 @@
 //  ES 3.0    300       "#version 300 es"   = WebGL 2.0
 //----------------------------------------
 
-#include "precomp.h"
-
-#if 0
-
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -80,8 +76,6 @@
 #endif
 #if defined(__APPLE__)
 #include "TargetConditionals.h"
-#endif
-
 #endif
 
 // Auto-enable GLES on matching platforms
